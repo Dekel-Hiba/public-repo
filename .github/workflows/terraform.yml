@@ -1,6 +1,13 @@
 name: Terraform CI/CD
 
 on:
+  workflow_dispatch:
+    inputs:
+      target_module:
+        description: 'Terraform module to apply (e.g., module.my_module)'
+        required: false
+        default: ''
+
   push:
     branches:
       - main
@@ -42,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production  # Triggers approval before apply
     needs: terraform-plan
+    if: github.event_name == 'push'
     defaults:
         run:
             working-directory: ./terraform-test
@@ -69,3 +77,28 @@ jobs:
     # Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan/tfplan
+
+  terraform-target-apply:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_module != ''
+    defaults:
+      run:
+        working-directory: ./terraform-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan (Target Module)
+        run: terraform plan -target=${{ github.event.inputs.target_module }} -out=tfplan-target
+
+      - name: Terraform Apply Target Module
+        run: terraform apply -auto-approve tfplan-target
