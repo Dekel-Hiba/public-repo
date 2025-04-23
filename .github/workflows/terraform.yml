@@ -15,6 +15,7 @@ on:
 jobs:
   terraform-plan:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     defaults:
       run:
         working-directory: ./terraform-test
