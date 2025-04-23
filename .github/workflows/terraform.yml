@@ -33,7 +33,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: tfplan
-            path: tfplan
+            path: ./terraform-test/tfplan
 
     #   - name: Show Terraform Plan (human-readable)
     #     run: terraform show -no-color tfplan
