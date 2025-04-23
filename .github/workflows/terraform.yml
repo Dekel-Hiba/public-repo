@@ -1,0 +1,61 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    environment: production  # Triggers approval before apply
+    defaults:
+      run:
+        working-directory: ./terraform-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform init
+    
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out saved_plan
+    
+      - name: Submit plan for approval
+        uses: jbergknoff/github-action-wait-for-terraform-plan-approval@v1
+        id: submit_plan
+        with:
+            command: submit
+            plan_contents: ${{steps.plan.outputs.stdout}}
+    
+        # Snip: send a Slack DM asking somebody to visit `steps.submit_plan.outputs.approval_prompt_url` to approve
+    
+      - name: Wait for approval
+        uses: jbergknoff/github-action-wait-for-terraform-plan-approval@v1
+        with:
+            command: wait
+            plan_id: ${{steps.submit_plan.outputs.plan_id}}
+            timeout_seconds: 600
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve saved_plan
+
+    #   - name: Terraform Init
+    #     run: terraform init
+
+    #   - name: Terraform Plan
+    #     run: terraform plan -out=tfplan
+
+    #   - name: Show Terraform Plan (human-readable)
+    #     run: terraform show -no-color tfplan
+
+    #   - name: Terraform Apply
+    #     run: terraform apply -auto-approve tfplan
