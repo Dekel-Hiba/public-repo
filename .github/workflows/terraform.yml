@@ -65,10 +65,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
             name: tfplan
+            path: ./terraform-test/tfplan
 
     # Terraform Apply
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan/tfplan
 
 
     #   - name: Terraform Init
