@@ -41,6 +41,7 @@ jobs:
   terraform-apply:
     runs-on: ubuntu-latest
     environment: production  # Triggers approval before apply
+    needs: terraform-plan
     defaults:
         run:
             working-directory: ./terraform-test
