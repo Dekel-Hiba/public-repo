@@ -36,12 +36,12 @@ jobs:
         id: tf-plan
         run: terraform plan -out=tfplan
 
-      # Save plan to artifacts  
-      - name: Publish Terraform Plan
-        uses: actions/upload-artifact@v4
-        with:
-            name: tfplan
-            path: ./terraform-test/tfplan
+    #   # Save plan to artifacts  
+    #   - name: Publish Terraform Plan
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #         name: tfplan
+    #         path: ./terraform-test/tfplan
 
     #   - name: Show Terraform Plan (human-readable)
     #     run: terraform show -no-color tfplan
@@ -68,16 +68,23 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-    # Download saved plan from artifacts  
-      - name: Download Terraform Plan
-        uses: actions/download-artifact@v4
-        with:
-            name: tfplan
-            path: ./terraform-test/tfplan
-
-    # Terraform Apply
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+      
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan/tfplan
+        run: terraform apply -auto-approve tfplan
+      
+
+    # # Download saved plan from artifacts  
+    #   - name: Download Terraform Plan
+    #     uses: actions/download-artifact@v4
+    #     with:
+    #         name: tfplan
+    #         path: ./terraform-test/tfplan
+
+    # # Terraform Apply
+    #   - name: Terraform Apply
+    #     run: terraform apply -auto-approve tfplan/tfplan
 
   terraform-target-apply:
     runs-on: ubuntu-latest
