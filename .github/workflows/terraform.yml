@@ -86,9 +86,35 @@ jobs:
     #   - name: Terraform Apply
     #     run: terraform apply -auto-approve tfplan/tfplan
 
-  terraform-target-apply:
+  terraform-target-plan:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_module != ''
+    defaults:
+      run:
+        working-directory: ./terraform-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan (Target Module)
+        run: terraform plan -target=${{ github.event.inputs.target_module }} -out=tfplan-target
+
+    #   - name: Terraform Apply Target Module
+    #     run: terraform apply -auto-approve tfplan-target
+
+  terraform-target-apply:
+    runs-on: ubuntu-latest
+    environment: production  # Triggers approval before apply
+    needs: terraform-target-plan
     defaults:
       run:
         working-directory: ./terraform-test
